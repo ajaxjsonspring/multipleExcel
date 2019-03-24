@@ -1,0 +1,13 @@
+
+.idea/workspace.xml
+.idea/misc.xml
+.idea/encodings.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/codeStyles/Project.xml
+.idea/codeStyles/Project.xml
+.idea/compiler.xml
+.idea/kotlinc.xml
+target/classes/com/fty/annotation/ExcelAnnotation.class
+target/classes/com/fty/model/MultipleFootage.class
+target/*
+.idea/*
