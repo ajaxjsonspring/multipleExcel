@@ -156,7 +156,12 @@ public class ExcelUtil {
             String sheetName = (String) sheetInfoMap.get("sheetName");
             String datePattern = (String) sheetInfoMap.get("datePattern");
             boolean counted = (boolean) sheetInfoMap.get("counted");
-            boolean isHashHeader = (boolean) sheetInfoMap.get("isHashHeader");
+            boolean isHasHeader = (boolean) sheetInfoMap.get("isHasHeader");
+
+            if(StringUtils.isBlank(sheetName)){
+                logger.info("缺少表头信息");
+                return hssfWorkbook;
+            }
             // 组装表头信息，已经依据cell的index进行过排序操作
             List<HeaderNode> headerNodeList = ExcelUtil.assembleHeaderNodeByClass(e);
             if (!headerNodeList.isEmpty()) {
@@ -178,7 +183,7 @@ public class ExcelUtil {
                 int columnSum = notExtensibleHeaderNameList.size();
                 hssfWorkbook = new HSSFWorkbook();
                 HSSFSheet hssfSheet = hssfWorkbook.createSheet(sheetName);
-                if(isHashHeader){
+                if(isHasHeader){
                     /** 1.标题行设置 **/
                     HSSFRow hssfRow = hssfSheet.createRow(rowIndex);
                     ExcelUtil.setRowHeight(RowType.TABLE_NAME.name(), hssfRow);
@@ -213,12 +218,14 @@ public class ExcelUtil {
 
     public static Map<String, Object> getSheetInfoByClass(Class t) {
         Map<String, Object> sheetInfoMap = new HashMap<>(8);
-        ExcelAnnotation excelAnnotation = (ExcelAnnotation) t.getAnnotations()[0];
-        sheetInfoMap.put("sheetName", excelAnnotation.sheetName());
-        sheetInfoMap.put("datePattern", excelAnnotation.datePattern());
-        sheetInfoMap.put("counted", excelAnnotation.counted());
-        sheetInfoMap.put("isHashHeader", excelAnnotation.isHashHeader());
-        logger.info("sheet信息：" + sheetInfoMap.toString());
+        ExcelAnnotation excelAnnotation = (ExcelAnnotation) t.getAnnotation(ExcelAnnotation.class);
+        if(excelAnnotation!=null){
+            sheetInfoMap.put("sheetName", excelAnnotation.sheetName());
+            sheetInfoMap.put("datePattern", excelAnnotation.datePattern());
+            sheetInfoMap.put("counted", excelAnnotation.counted());
+            sheetInfoMap.put("isHasHeader", excelAnnotation.isHasHeader());
+            logger.info("sheet信息：" + sheetInfoMap.toString());
+        }
         return sheetInfoMap;
     }
 
@@ -407,22 +414,24 @@ public class ExcelUtil {
         }
     }
 
-    private static List<HeaderInfo> getHeaderInfoByClass(Class t) {
+    public static List<HeaderInfo> getHeaderInfoByClass(Class t) {
         Map<Integer, HeaderInfo> map = new TreeMap<>();
             Field[] fields = t.getDeclaredFields();
             HeaderInfo headerInfo;
             ExcelAnnotation excelAnnotation;
-            for (Field field : fields) {
+            for (Field field : fields)
                 if (field.getAnnotations().length != 0) {
-                    headerInfo = new HeaderInfo();
-                    excelAnnotation = (ExcelAnnotation) field.getAnnotations()[0];
-                    headerInfo.setHeaderName(excelAnnotation.headerName());
-                    headerInfo.setIndex(excelAnnotation.index());
-                    headerInfo.setLevel(excelAnnotation.level());
-                    headerInfo.setParentIndex(excelAnnotation.parentIndex());
-                    map.put(excelAnnotation.index(), headerInfo);
+                    excelAnnotation = field.getAnnotation(ExcelAnnotation.class);
+                    if (excelAnnotation != null) {
+                        headerInfo = new HeaderInfo();
+                        headerInfo.setHeaderName(excelAnnotation.headerName());
+                        headerInfo.setIndex(excelAnnotation.index());
+                        headerInfo.setLevel(excelAnnotation.level());
+                        headerInfo.setParentIndex(excelAnnotation.parentIndex());
+                        map.put(excelAnnotation.index(), headerInfo);
+                    }
+
                 }
-            }
         return ExcelUtil.sortByKey(map);
     }
 
@@ -529,19 +538,21 @@ public class ExcelUtil {
         Object value = null;
         for (Field field : fields) {
             if (field.getAnnotations().length != 0) {
-                excelAnnotation = (ExcelAnnotation) field.getAnnotations()[0];
-                index = excelAnnotation.index();
-                valueColumn = ExcelUtil.isValueColumn(index, indexList);
-                if (valueColumn) {
-                    fieldName = field.getName();
-                    getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-                    try {
-                        Method method = temp.getClass().getMethod(getMethodName);
-                        value = method.invoke(temp);
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
+                excelAnnotation = (ExcelAnnotation) field.getAnnotation(ExcelAnnotation.class);
+                if(excelAnnotation!=null){
+                    index = excelAnnotation.index();
+                    valueColumn = ExcelUtil.isValueColumn(index, indexList);
+                    if (valueColumn) {
+                        fieldName = field.getName();
+                        getMethodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                        try {
+                            Method method = temp.getClass().getMethod(getMethodName);
+                            value = method.invoke(temp);
+                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                        map.put(index, value);
                     }
-                    map.put(index, value);
                 }
             }
         }
