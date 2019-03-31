@@ -3,6 +3,8 @@ package com.fty
 import com.fty.model.MultipleFootage
 import com.fty.model.TestExcelModel
 import com.fty.util.ExcelUtil
+import com.fty.util.ExcelUtil.getHeaderInfoByClass
+import com.fty.util.ExcelUtil.getSheetInfoByClass
 import org.junit.Test
 import java.io.File
 import java.io.FileOutputStream
@@ -56,5 +58,12 @@ class ExcelTest {
         val out = FileOutputStream(file)
         workbook.write(out)
         out.close()
+    }
+
+
+    @Test
+    fun getAnnotations(){
+        getSheetInfoByClass(TestExcelModel::class.java)
+       getHeaderInfoByClass(TestExcelModel::class.java)
     }
 }

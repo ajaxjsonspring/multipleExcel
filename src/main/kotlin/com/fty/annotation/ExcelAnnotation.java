@@ -33,5 +33,5 @@ public @interface ExcelAnnotation {
     boolean counted() default false;
 
     // 是否添加首行
-    boolean isHashHeader() default false;
+    boolean isHasHeader() default false;
 }

@@ -6,7 +6,7 @@ import com.fty.annotation.ExcelAnnotation;
 import java.io.Serializable;
 import java.util.Date;
 
-@ExcelAnnotation(sheetName = "申诉表",isHashHeader = false)
+@ExcelAnnotation(sheetName = "申诉表",isHasHeader = false)
 public class MultipleFootage implements Serializable {
     private Integer id;
 

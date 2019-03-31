@@ -3,14 +3,18 @@ package com.fty.model;
 
 import com.fty.annotation.ExcelAnnotation;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 
-@ExcelAnnotation(sheetName = "申诉表",isHashHeader = false)
+@ExcelAnnotation(sheetName = "申诉表",isHasHeader = false)
+@Resource
 public class TestExcelModel implements Serializable {
+    @Resource
     private Integer id;
 
     @ExcelAnnotation(headerName = "表头0",
             index = 0, level = 0, parentIndex = -1)
+    @Resource
     private String foot1;
 
     @ExcelAnnotation(headerName = "表头1",
